@@ -22,7 +22,7 @@ pod "DCHSoundCloudApi"
 
 ## Author
 
-Daniel Chirita, daniel.chirita@woowteam.com
+Daniel Chirita
 
 ## License
 
