@@ -1,0 +1,12 @@
+source 'https://github.com/CocoaPods/Specs.git'
+use_frameworks!
+
+target 'DCHSoundCloudApi_Example', :exclusive => true do
+  pod 'DCHSoundCloudApi', :path => '../'
+end
+
+target 'DCHSoundCloudApi_Tests', :exclusive => true do
+  pod 'DCHSoundCloudApi', :path => '../'
+
+  pod 'Kiwi'
+end
