@@ -7,6 +7,7 @@
 //
 
 #import "DCHViewController.h"
+#import "DCHSoundCloudApi.h"
 
 @interface DCHViewController ()
 
@@ -17,13 +18,12 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-	// Do any additional setup after loading the view, typically from a nib.
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+- (void)viewDidAppear:(BOOL)animated{
+    [super viewDidAppear:animated];
+    
+    [[DCHSoundCloudApi sharedInstance] playItemAtUrl:@"https://soundcloud.com/editorsofficial/no-harm"];
 }
 
 @end

@@ -7,12 +7,14 @@
 //
 
 #import "DCHAppDelegate.h"
+#import "DCHSoundCloudApi.h"
 
 @implementation DCHAppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
-    // Override point for customization after application launch.
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions{
+    
+    [DCHSoundCloudApi setClientID:@"d70e90d8c17ce68830f145f1362d8e9a"];
+    
     return YES;
 }
 
