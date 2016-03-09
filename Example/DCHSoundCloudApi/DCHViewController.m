@@ -23,7 +23,13 @@
 - (void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     
-    [[DCHSoundCloudApi sharedInstance] playItemAtUrl:@"https://soundcloud.com/editorsofficial/no-harm"];
+    [[DCHSoundCloudApi sharedInstance] playItemAtUrl:@"https://soundcloud.com/editorsofficial/no-harm"
+                                     progressHandler:^(NSTimeInterval duration,
+                                                       NSTimeInterval currentTime,
+                                                       NSError *error){
+                                         NSLog(@"DURATION : %f| CURRENT_TIME: %f | ERROR: %@",
+                                               duration, currentTime, error);
+                                     }];
 }
 
 @end

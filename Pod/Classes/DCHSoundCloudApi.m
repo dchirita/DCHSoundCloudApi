@@ -11,15 +11,18 @@
 #import <AVFoundation/AVFoundation.h>
 
 #import "Bolts.h"
-#import "STKAudioPlayer.h"
 #import "CocoaLumberjack.h"
+
+#define BLOCK_EXEC(block, ...) if (block) { block(__VA_ARGS__); };
 
 static DCHSoundCloudApi *sharedInstance = nil;
 
-@interface DCHSoundCloudApi()<STKAudioPlayerDelegate>
+@interface DCHSoundCloudApi()<AVAudioPlayerDelegate>
 
 @property (nonatomic, copy) NSString *clientID;
-@property (strong, nonatomic) STKAudioPlayer *audioPlayer;
+@property (nonatomic, strong) AVAudioPlayer *audioPlayer;
+@property (nonatomic, copy) DCHSoundCloudApiProgressHandler progressHandler;
+@property (nonatomic, strong) NSTimer *playbackTimer;
 
 @end
 
@@ -40,71 +43,99 @@ static DCHSoundCloudApi *sharedInstance = nil;
     [DDLog addLogger:[DDTTYLogger sharedInstance]];
 }
 
-- (void)playItemAtUrl:(NSString *)url{
+- (void)playItemAtUrl:(NSString *)url
+      progressHandler:(DCHSoundCloudApiProgressHandler)progressHandler{
     
     NSAssert(0 != url.length, @"DCHSoundCloudApi can't play an empty url");
     
+    self.progressHandler = progressHandler;
+    
     [[DCHSoundCloudResolve startAsyncWithUrl:url
                                     clientId:self.clientID] continueWithBlock:^id(BFTask *task){
+        NSURL *trackURL = [NSURL URLWithString:task.result];
         
-        [[self player] queue:task.result];
+        NSURLSessionTask *sessionTask = [[NSURLSession sharedSession]
+                                         dataTaskWithURL:trackURL
+                                         completionHandler:^(NSData *data,
+                                                             NSURLResponse *response,
+                                                             NSError *error) {
+                                             
+                                             dispatch_async(dispatch_get_main_queue(), ^(void){
+                                                 if (error){
+                                                     [self updateListenerWithError:error];
+                                                     return;
+                                                 }
+                                                 
+                                                 NSError *playError = nil;
+                                                 
+                                                 self.audioPlayer = [[AVAudioPlayer alloc]
+                                                                     initWithData:data
+                                                                     error:&playError];
+                                                 if (playError){
+                                                     [self updateListenerWithError:playError];
+                                                     return;
+                                                 }
+                                                 
+                                                 [self.audioPlayer play];
+                                                 
+                                                 [self updateListener];
+                                                 [self startUpdatingListener];
+                                             });
+                                         }];
+        
+        [sessionTask resume];
         
         return nil;
     }];
 }
 
 #pragma mark - Delegates
-
-/// Raised when an item has started playing
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer didStartPlayingQueueItemId:(NSObject*)queueItemId{
-    NSLog(@"didStartPlayingQueueItemId");
-}
-
-/// Raised when an item has finished buffering (may or may not be the currently playing item)
-/// This event may be raised multiple times for the same item if seek is invoked on the player
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer didFinishBufferingSourceWithQueueItemId:(NSObject*)queueItemId{
-    NSLog(@"didFinishBufferingSourceWithQueueItemId");
-}
-
-/// Raised when the state of the player has changed
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer stateChanged:(STKAudioPlayerState)state previousState:(STKAudioPlayerState)previousState{
-    NSLog(@"stateChanged");
-    
-    if (STKAudioPlayerStatePlaying == state){
-        NSLog(@"DURATION : %f| PROGRESS: %f", audioPlayer.duration, audioPlayer.progress);
+#pragma mark - AVAudioPlayerDelegate
+- (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag{
+    if (flag){
+        [self updateListener];
+        [self cleanUp];
     }
 }
 
-/// Raised when an item has finished playing
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer didFinishPlayingQueueItemId:(NSObject*)queueItemId withReason:(STKAudioPlayerStopReason)stopReason andProgress:(double)progress andDuration:(double)duration{
-    NSLog(@"didFinishPlayingQueueItemId");
-}
-
-/// Raised when an unexpected and possibly unrecoverable error has occured (usually best to recreate the STKAudioPlauyer)
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer unexpectedError:(STKAudioPlayerErrorCode)errorCode{
-    NSLog(@"unexpectedError");
-}
-
-/// Optionally implemented to get logging information from the STKAudioPlayer (used internally for debugging)
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer logInfo:(NSString*)line{
-    NSLog(@"logInfo");
-}
-
-/// Raised when items queued items are cleared (usually because of a call to play, setDataSource or stop)
--(void) audioPlayer:(STKAudioPlayer*)audioPlayer didCancelQueuedItems:(NSArray*)queuedItems{
-    NSLog(@"didCancelQueuedItems");
+- (void)audioPlayerDecodeErrorDidOccur:(AVAudioPlayer *)player error:(NSError *)error{
+    [self updateListenerWithError:error];
+    [self cleanUp];
 }
 
 #pragma mark - Private
 
-- (STKAudioPlayer *)player{
+- (AVAudioPlayer *)player{
     
     if (!self.audioPlayer){
-        self.audioPlayer = [[STKAudioPlayer alloc] init];
+        self.audioPlayer = [[AVAudioPlayer alloc] init];
         self.audioPlayer.delegate = self;
     }
     
     return self.audioPlayer;
+}
+
+- (void)startUpdatingListener{
+    self.playbackTimer = [NSTimer scheduledTimerWithTimeInterval:1.0
+                                                          target:self
+                                                        selector:@selector(updateListener)
+                                                        userInfo:nil
+                                                         repeats:YES];
+}
+
+- (void)updateListener{
+    BLOCK_EXEC(self.progressHandler, self.audioPlayer.duration, self.audioPlayer.currentTime, nil);
+}
+
+- (void)updateListenerWithError:(NSError *)error{
+    BLOCK_EXEC(self.progressHandler, 0.f, 0.f, error);
+}
+
+- (void)cleanUp{
+    [self.playbackTimer invalidate];
+    self.playbackTimer = nil;
+    
+    self.audioPlayer = nil;
 }
 
 @end
