@@ -7,10 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "DCHSoundCloudApiProgressHandler.h"
 
-typedef void(^DCHSoundCloudApiProgressHandler)(NSTimeInterval duration,
-                                               NSTimeInterval currentTime,
-                                               NSError *error);
 @interface DCHSoundCloudApi : NSObject
 
 + (instancetype)sharedInstance;
