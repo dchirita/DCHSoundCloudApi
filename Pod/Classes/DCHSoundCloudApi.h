@@ -18,4 +18,6 @@
 - (void)playItemAtUrl:(NSString *)url
       progressHandler:(DCHSoundCloudApiProgressHandler)progressHandler;
 
+- (void)stop;
+
 @end

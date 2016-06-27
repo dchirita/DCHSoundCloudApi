@@ -15,4 +15,6 @@
 
 - (void)playWithProgressHandler:(DCHSoundCloudApiProgressHandler)handler;
 
+- (void)stop;
+
 @end

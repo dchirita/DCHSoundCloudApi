@@ -25,7 +25,7 @@ static DCHSoundCloudApi *sharedInstance = nil;
 #pragma mark - Public
 
 + (instancetype)sharedInstance{
-    NSAssert(nil != sharedInstance, @"[DCHSoundCloudApi setClientID:] has to be called before using sharedInstance");
+    NSAssert(nil != sharedInstance && sharedInstance.clientID != nil, @"[DCHSoundCloudApi setClientID:] has to be called before using sharedInstance");
     
     return sharedInstance;
 }
@@ -68,6 +68,10 @@ static DCHSoundCloudApi *sharedInstance = nil;
         
         return nil;
     }];
+}
+
+- (void)stop{
+    [self.player stop];
 }
 
 @end

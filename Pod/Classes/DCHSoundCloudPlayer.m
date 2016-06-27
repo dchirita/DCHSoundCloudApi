@@ -54,6 +54,13 @@
     [self startUpdatingListener];
 }
 
+- (void)stop{
+    [self.audioPlayer stop];
+    
+    BLOCK_EXEC(self.progressHandler, self.audioPlayer.duration, 0, nil);
+    [self cleanUp];
+}
+
 #pragma mark - AVAudioPlayerDelegate
 
 - (void)audioPlayerDidFinishPlaying:(AVAudioPlayer *)player successfully:(BOOL)flag{

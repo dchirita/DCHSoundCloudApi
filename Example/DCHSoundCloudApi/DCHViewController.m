@@ -11,25 +11,49 @@
 
 @interface DCHViewController ()
 
+@property (nonatomic) BOOL isPlaying;
+
+@property (weak, nonatomic) IBOutlet UIButton *playOrPauseButton;
+@property (weak, nonatomic) IBOutlet UITextField *songUrlTextField;
+
 @end
 
 @implementation DCHViewController
 
-- (void)viewDidLoad
-{
-    [super viewDidLoad];
-}
-
 - (void)viewDidAppear:(BOOL)animated{
     [super viewDidAppear:animated];
     
-    [[DCHSoundCloudApi sharedInstance] playItemAtUrl:@"https://soundcloud.com/themookiequeen/siempre-me-quedara-bebe"
+    self.songUrlTextField.text = @"https://soundcloud.com/themookiequeen/siempre-me-quedara-bebe";
+}
+
+- (IBAction)playOrPauseButtonPressed:(id)sender {
+    self.isPlaying = !self.isPlaying;
+    
+    if (self.isPlaying){
+        [self play];
+        [self.playOrPauseButton setTitle:@"Stop" forState:UIControlStateNormal];
+    } else {
+        [self stop];
+        [self.playOrPauseButton setTitle:@"Play" forState:UIControlStateNormal];
+    }
+}
+
+- (void)play{
+    
+    NSString *songURL = self.songUrlTextField.text;
+    
+    [[DCHSoundCloudApi sharedInstance] playItemAtUrl:songURL
                                      progressHandler:^(NSTimeInterval duration,
                                                        NSTimeInterval currentTime,
                                                        NSError *error){
                                          NSLog(@"DURATION : %f| CURRENT_TIME: %f | ERROR: %@",
                                                duration, currentTime, error);
                                      }];
+
+}
+
+- (void)stop{
+    [[DCHSoundCloudApi sharedInstance] stop];
 }
 
 @end
