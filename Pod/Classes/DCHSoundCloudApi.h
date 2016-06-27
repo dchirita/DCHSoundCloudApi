@@ -11,6 +11,8 @@
 
 @interface DCHSoundCloudApi : NSObject
 
+@property (nonatomic, assign, readonly) BOOL isPlaying;
+
 + (instancetype)sharedInstance;
 
 + (void)setClientID:(NSString *)clientID;

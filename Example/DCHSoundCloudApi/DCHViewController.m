@@ -11,8 +11,6 @@
 
 @interface DCHViewController ()
 
-@property (nonatomic) BOOL isPlaying;
-
 @property (weak, nonatomic) IBOutlet UIButton *playOrPauseButton;
 @property (weak, nonatomic) IBOutlet UITextField *songUrlTextField;
 
@@ -27,9 +25,8 @@
 }
 
 - (IBAction)playOrPauseButtonPressed:(id)sender {
-    self.isPlaying = !self.isPlaying;
     
-    if (self.isPlaying){
+    if (![[DCHSoundCloudApi sharedInstance] isPlaying]){
         [self play];
         [self.playOrPauseButton setTitle:@"Stop" forState:UIControlStateNormal];
     } else {

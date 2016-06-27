@@ -58,6 +58,8 @@ static DCHSoundCloudApi *sharedInstance = nil;
                                                      return;
                                                  }
                                                  
+                                                 _isPlaying = YES;
+                                                 
                                                  self.player = [[DCHSoundCloudPlayer alloc] initWithData:data];
                                                  
                                                  [self.player playWithProgressHandler:progressHandler];
@@ -71,6 +73,9 @@ static DCHSoundCloudApi *sharedInstance = nil;
 }
 
 - (void)stop{
+    
+    _isPlaying = NO;
+    
     [self.player stop];
 }
 
