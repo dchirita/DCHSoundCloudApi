@@ -13,7 +13,7 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions{
     
-    [DCHSoundCloudApi setClientID:@"d70e90d8c17ce68830f145f1362d8e9a"];
+    [DCHSoundCloudApi setClientID:nil];
     
     return YES;
 }
